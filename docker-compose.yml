@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    image: app
+    container_name: app
+    restart: always
+    working_dir: /www
+    volumes:
+      - .:/www
+    ports:
+      - 8000:8000
+    networks:
+      - local-mysql  
+    depends_on:
+      - mysql  
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456 #Database root password
+      - MYSQL_DATABASE=MyDB #Database name
+      - MYSQL_USER=DBUser #Database user
+      - MYSQL_PASSWORD=123456 #Database password
+      - MYSQL_ROOT_HOST='%'
+    ports:
+      - 3306:3306
+    volumes:
+      - $PWD/mysql:/var/lib/mysql 
+    networks:
+      - local-mysql    
+      
+  phpmyadmin:
+      depends_on:
+          - mysql
+      image: phpmyadmin
+      environment:
+          - PMA_HOST=mysql
+          - PMA_PORT=3306
+          - UPLOAD_LIMIT=1000M
+      ports:
+          - 8050:80
+      networks:
+          - local-mysql        
+networks:
+  local-mysql:
+     driver: bridge
